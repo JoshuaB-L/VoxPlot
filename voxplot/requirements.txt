@@ -1,0 +1,28 @@
+# VoxPlot Dependencies
+# Core scientific computing
+numpy>=1.21.0
+pandas>=1.3.0
+scipy>=1.7.0
+
+# Visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Configuration and data handling
+PyYAML>=6.0
+pathlib2>=2.3.0; python_version < "3.4"
+
+# Optional: Enhanced performance and additional features
+# Uncomment if needed for large datasets
+# numba>=0.56.0          # JIT compilation for performance
+# dask>=2022.1.0         # Parallel computing for large datasets
+# h5py>=3.6.0            # HDF5 support for large files
+# netCDF4>=1.5.8         # NetCDF support
+# xarray>=0.20.0         # Multi-dimensional labeled arrays
+
+# Development and testing (optional)
+# pytest>=6.2.0
+# pytest-cov>=3.0.0
+# black>=22.0.0
+# flake8>=4.0.0
+# mypy>=0.931
