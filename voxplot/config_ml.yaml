@@ -1,0 +1,315 @@
+# ML-Enhanced VoxPlot Analysis Configuration
+# ==========================================
+# Configuration for machine learning enhanced analysis of 3D forest structure data
+# Includes clustering, dimensionality reduction, spatial pattern analysis, and model comparison
+
+analysis:
+  # Basic analysis parameters
+  crown_base_height: 5.0          # Height threshold for crown base (meters)
+  voxel_size: 0.25                # Voxel resolution (meters)
+  min_density: 0.001              # Minimum density threshold for analysis
+  output_dir: "ml_analysis_results"  # Output directory for all results
+  
+  # Density types to analyze
+  density_types: ["lad", "wad", "pad"]
+  
+  # Height stratification parameters
+  height_layers:
+    lower_percentile: 33           # Lower crown layer (0-33rd percentile)
+    upper_percentile: 67           # Upper crown layer (67th-100th percentile)
+  
+  # ML analysis parameters
+  ml_analysis:
+    # Random sampling for large datasets (for performance)
+    max_sample_size: 10000         # Maximum number of voxels to sample per model
+    enable_sampling: true          # Enable random sampling for large datasets
+    random_seed: 42               # Random seed for reproducible results
+
+# ML Analysis Configuration
+ml_config:
+  # Clustering analysis settings
+  clustering:
+    # K-Means clustering
+    kmeans:
+      cluster_range: [3, 5, 8, 12, 15]  # Range of cluster numbers to test
+      n_init: 10                    # Number of random initializations
+      max_iter: 300                 # Maximum iterations
+      
+    # DBSCAN clustering  
+    dbscan:
+      eps_values: [0.5, 1.0, 2.0, 3.0]     # Epsilon values to test
+      min_samples: [5, 10, 15, 20]         # Minimum samples values to test
+      
+    # Hierarchical clustering
+    hierarchical:
+      enable: true
+      linkage_methods: ['ward', 'complete', 'average']
+      n_clusters_range: [3, 5, 8, 12]
+  
+  # Dimensionality reduction settings
+  dimensionality_reduction:
+    # PCA settings
+    pca:
+      n_components: [2, 3, 5, 10]   # Number of components to test
+      enable_explained_variance: true
+      
+    # t-SNE settings
+    tsne:
+      n_components: 2               # Number of t-SNE components (2D or 3D)
+      perplexity: [10, 30, 50]      # Perplexity values to test
+      max_iter: 1000               # Maximum iterations
+      enable: true                  # Enable t-SNE (can be slow for large datasets)
+      
+    # UMAP settings (if available)
+    umap:
+      n_components: 2
+      n_neighbors: [15, 30, 50]
+      min_dist: 0.1
+      enable: true
+  
+  # Spatial pattern analysis settings  
+  spatial_analysis:
+    # Density hotspot detection
+    hotspot_detection:
+      high_density_percentile: 90   # Threshold for high-density regions
+      low_density_percentile: 10    # Threshold for low-density regions
+      
+    # Clumping analysis
+    clumping:
+      neighborhood_radius: 1.0      # Radius for neighborhood analysis (meters)
+      clumping_threshold: 0.1       # Density threshold for clump detection
+      
+    # Spatial gradient analysis
+    gradients:
+      enable: true
+      gradient_resolution: 1.0      # Resolution for gradient calculation
+      
+    # Height stratification
+    height_analysis:
+      layers: ['whole', 'upper', 'middle', 'lower']
+      enable_layer_comparison: true
+  
+  # Physical accuracy assessment
+  physical_accuracy:
+    # Distribution analysis
+    distribution_tests:
+      enable_normality_test: true
+      enable_outlier_detection: true
+      outlier_method: 'iqr'         # 'iqr' or 'zscore'
+      
+    # Plausibility checks
+    plausibility:
+      check_negative_densities: true
+      check_extreme_values: true
+      extreme_value_percentile: 99.9
+      
+    # Consistency analysis
+    consistency:
+      enable_spatial_consistency: true
+      enable_height_consistency: true
+      consistency_radius: 2.0       # Radius for consistency checks
+  
+  # Occlusion analysis settings
+  occlusion_analysis:
+    # Shadow detection
+    shadow_detection:
+      enable: true
+      spatial_tolerance: 2.0        # Spatial tolerance for shadow detection (meters)
+      density_ratio_threshold: 0.1  # Threshold for shadow identification
+      
+    # Line-of-sight analysis
+    line_of_sight:
+      enable: false                 # Computationally intensive
+      ray_resolution: 0.5           # Resolution for ray casting
+      
+    # Correction assessment
+    correction_assessment:
+      enable_empirical_assessment: true
+      zero_density_threshold: 50    # Percentage threshold for poor correction
+  
+  # Regression and correlation analysis
+  regression:
+    # Linear regression
+    linear_regression:
+      enable: true
+      
+    # Random Forest regression
+    random_forest:
+      enable: true
+      n_estimators: 100
+      max_depth: 10
+      
+    # XGBoost regression (if available)
+    xgboost:
+      enable: true
+      n_estimators: 100
+      max_depth: 6
+      
+    # Cross-validation settings
+    cross_validation:
+      enable: true
+      cv_folds: 5
+      scoring: 'r2'
+  
+  # Model comparison settings
+  comparative_analysis:
+    # Similarity analysis
+    similarity:
+      method: 'cosine'              # 'cosine', 'euclidean', 'correlation'
+      enable_feature_comparison: true
+      
+    # Performance ranking
+    ranking:
+      # Weights for different criteria (must sum to 1.0)
+      weights:
+        clustering_quality: 0.3
+        physical_plausibility: 0.25
+        occlusion_correction: 0.25
+        spatial_consistency: 0.2
+        
+      # Ranking methods
+      aggregation_method: 'weighted_sum'  # 'weighted_sum', 'rank_aggregation'
+
+# Visualization settings
+visualization:
+  # Figure settings
+  figure_settings:
+    dpi: 600                        # High resolution for publications
+    format: ['png', 'pdf', 'svg']   # Output formats
+    
+  # Size settings  
+  figsize:
+    dashboard_large: [20, 24]       # Large comprehensive dashboard
+    dashboard_medium: [16, 12]      # Medium dashboard
+    individual_plot: [12, 8]        # Individual analysis plots
+    square_plot: [10, 10]          # Square plots (for 3D visualizations)
+    
+  # Typography
+  typography:
+    title_fontsize: 24
+    subtitle_fontsize: 18
+    label_fontsize: 14
+    tick_fontsize: 11
+    annotation_fontsize: 12
+    legend_fontsize: 12
+    
+  # Color schemes
+  colors:
+    # Model-specific colors
+    model_palette: 
+      - "#2E86AB"    # Professional blue (AmapVox)
+      - "#A23B72"    # Vibrant magenta (VoxLAD)  
+      - "#F18F01"    # Warm orange (VoxPy)
+      - "#C73E1D"    # Deep red
+      - "#592E83"    # Purple
+      - "#1B998B"    # Teal
+      
+    # Density type colors
+    density_colors:
+      lad: "#2ECC71"      # Green for leaf area density
+      wad: "#8B4513"      # Brown for wood area density
+      pad: "#4A90E2"      # Blue for plant area density
+      
+    # Clustering colors
+    cluster_colors:
+      - "#FF6B6B"    # Red
+      - "#4ECDC4"    # Teal
+      - "#45B7D1"    # Blue
+      - "#96CEB4"    # Green
+      - "#FFEAA7"    # Yellow
+      - "#DDA0DD"    # Plum
+      - "#98D8C8"    # Mint
+      - "#F7DC6F"    # Gold
+      
+    # Color maps
+    sequential_cmap: "viridis"      # For density/height gradients
+    diverging_cmap: "RdBu_r"        # For difference/comparison plots
+    categorical_cmap: "Set3"        # For categorical data
+
+# Models configuration
+models:
+  # AmapVox TLS model
+  AmapVox_TLS:
+    model_type: "amapvox"
+    description: "AmapVox Terrestrial Laser Scanning model"
+    file_paths:
+      pad: "data/amapvox_tls_merged_pad_unfiltered_transect.csv"
+      wad: "data/amapvox_tls_merged_wad_unfiltered_transect.csv"
+    expected_columns: ["x", "y", "z", "density_value"]
+    
+  # AmapVox ULS model  
+  AmapVox_ULS:
+    model_type: "amapvox"
+    description: "AmapVox Unmanned Laser Scanning model"
+    file_paths:
+      pad: "data/amapvox_pad_uls_transect.csv"
+      wad: "data/amapvox_uls_britz_oak_leaf_off_000.csv"
+    expected_columns: ["x", "y", "z", "density_value"]
+    
+  # VoxLAD TLS model
+  VoxLAD_TLS:
+    model_type: "voxlad"
+    description: "VoxLAD Terrestrial Laser Scanning model"
+    file_paths:
+      pad: "data/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_pad_transect.txt"
+      wad: "data/voxlad_tls_britz_oak_leaf_off_wad_g_erecto_transect.txt"
+      lad: "data/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_lad_transect.txt"
+    expected_columns: ["x", "y", "z", "density_1", "percent_explored_1"]
+    
+  # VoxPy Combined model
+  VoxPy_Combined:
+    model_type: "voxpy"
+    description: "VoxPy Combined density analysis model"
+    file_paths:
+      combined: "data/voxpy-v7_002_003_enhanced_combined_density.csv"
+    expected_columns: ["x", "y", "z", "density_type", "density_value"]
+
+# Ground truth data (if available for validation)
+ground_truth:
+  enable: false
+  file_path: "ground_truth_data/field_measurements.csv"
+  measurements: ["lai", "wai", "pai"]
+  height_measurements: true
+
+# Performance and optimization settings
+performance:
+  # Memory management
+  chunk_size: 50000               # Process data in chunks for memory efficiency
+  enable_memory_optimization: true
+  
+  # Parallel processing
+  n_jobs: -1                      # Use all available CPU cores (-1)
+  enable_parallel: true
+  
+  # Caching
+  enable_caching: true
+  cache_directory: ".ml_cache"
+
+# Output settings
+output:
+  # Export formats
+  export_formats:
+    enable_csv: true
+    enable_excel: true             # Requires openpyxl
+    enable_json: true
+    enable_hdf5: false             # Requires tables/pytables
+    
+  # Visualization exports
+  figure_formats: ["png", "pdf", "svg"]
+  
+  # Compression
+  enable_compression: true
+  compression_format: "gzip"
+  
+  # Report generation
+  generate_report: true
+  report_format: "markdown"       # 'markdown', 'html', 'pdf'
+  include_technical_details: true
+
+# Logging configuration
+logging:
+  level: "INFO"                   # DEBUG, INFO, WARNING, ERROR
+  enable_file_logging: true
+  log_file: "ml_analysis.log"
+  max_log_size: "10MB"
+  backup_count: 5
