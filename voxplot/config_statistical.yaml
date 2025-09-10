@@ -1,0 +1,267 @@
+# VoxPlot Statistical Analysis Configuration File
+# Enhanced configuration for statistical model comparison against ground truth
+# Publication-quality settings for Nature journal standards
+
+analysis:
+  # Standard Analysis Parameters
+  crown_base_height: 0.0
+  voxel_size: 0.25
+  min_density: 0.0001
+  comparison_mode: "same_density_type_different_model_type"
+  density_types: ["lad", "wad", "pad"]
+  output_dir: "statistical_analysis_results"
+  
+  # Statistical Analysis Parameters
+  statistical:
+    # Significance level for statistical tests
+    alpha: 0.05
+    
+    # Bootstrap parameters
+    bootstrap_samples: 1000
+    confidence_level: 0.95
+    
+    # Cross-validation parameters
+    cv_folds: 5
+    cv_random_state: 42
+    
+    # Spatial analysis parameters
+    spatial_tolerance: 0.1  # meters for voxel matching
+    error_hotspots: 10      # number of top error locations to identify
+    
+    # Outlier detection
+    outlier_detection: true
+    outlier_method: "iqr"   # "iqr", "zscore", or "isolation_forest"
+    outlier_threshold: 3.0
+    
+    # Ground truth reference method preferences
+    reference_preferences:
+      LAI: "Litter Fall"        # Gold standard for LAI
+      WAI: "Ground Truth Mean"  # Use mean of ground truth methods
+      PAI: "Ground Truth Mean"
+  
+  # Visualization Parameters - Enhanced for Statistical Plots
+  visualization:
+    # Output format control
+    plot_mode: "combined_plots"  # Options: "combined_plots", "single_plots"
+    
+    # Figure sizes for different plot types [width, height] in inches
+    figsize_large: [20, 24]      # For comprehensive dashboard
+    figsize_medium: [16, 12]     # For multi-panel plots  
+    figsize_small: [12, 9]       # For single plots
+    figsize_table: [16, 10]      # For table visualizations
+    
+    # DPI for publication quality
+    dpi: 600
+    
+    # Statistical plot specific settings
+    statistical_plots:
+      # Dashboard layout
+      dashboard_rows: 4
+      dashboard_cols: 3
+      
+      # Color schemes for statistical significance
+      significance_colors:
+        significant: "#E74C3C"    # Red for p < 0.05
+        not_significant: "#95A5A6" # Gray for p >= 0.05
+        high_confidence: "#2ECC71"  # Green for high confidence
+        
+      # Error visualization
+      error_thresholds:
+        excellent: 5.0    # % error < 5% (green)
+        good: 10.0        # % error < 10% (orange)
+        poor: 20.0        # % error >= 20% (red)
+        
+      # Correlation thresholds
+      correlation_thresholds:
+        excellent: 0.9    # r > 0.9 (dark green)
+        good: 0.7         # r > 0.7 (light green)
+        moderate: 0.5     # r > 0.5 (yellow)
+        poor: 0.3         # r <= 0.3 (red)
+    
+    # Typography - Nature journal compatible
+    typography:
+      title_font: "Helvetica"
+      body_font: "Helvetica"
+      fallback_fonts: ["Arial", "DejaVu Sans", "Liberation Sans"]
+      
+      title_fontsize: 24
+      subtitle_fontsize: 18
+      label_fontsize: 14
+      tick_fontsize: 11
+      annotation_fontsize: 12
+      legend_fontsize: 12
+      table_header_fontsize: 13
+      table_cell_fontsize: 11
+      
+      title_weight: "bold"
+      subtitle_weight: "semibold"
+      label_weight: "normal"
+      
+      title_pad: 25
+      label_pad: 15
+      text_margin: 0.05
+    
+    # Color palette - Nature journal compatible
+    colors:
+      # Model colors (consistent with main config)
+      model_palette: [
+        "#4A90E2",    # Professional blue (AmapVox)
+        "#E74C3C",    # Vibrant coral red (VoxLAD) 
+        "#2ECC71",    # Fresh green (VoxPy)
+        "#9B59B6",    # Rich purple
+        "#F39C12",    # Warm orange
+        "#1ABC9C",    # Teal
+        "#34495E",    # Slate gray
+        "#E67E22"     # Burnt orange
+      ]
+      
+      # Density type colors
+      density_colors:
+        lad: "#2ECC71"  # Green for leaves
+        wad: "#8B4513"  # Brown for wood
+        pad: "#4A90E2"  # Blue for plant
+      
+      # Statistical visualization colors
+      reference_color: "#E74C3C"     # Red dashed line
+      confidence_interval: "#BDC3C7" # Light gray
+      error_positive: "#E74C3C"      # Red for positive errors
+      error_negative: "#3498DB"      # Blue for negative errors
+      
+      # Background colors
+      figure_background: "#FFFFFF"
+      plot_background: "#FFFFFF"
+      grid_color: "#E5E5E5"
+      text_color: "#2C3E50"
+      
+      # Transparency settings
+      plot_alpha: 0.8
+      fill_alpha: 0.6
+      marker_alpha: 0.7
+    
+    # Export Settings - Multiple formats for publication
+    export:
+      formats: ["png", "pdf", "svg"]
+      default_format: "png"
+      
+      png_dpi: 600
+      pdf_dpi: 600
+      svg_dpi: 600
+      
+      bbox_inches: "tight"
+      pad_inches: 0.2
+      facecolor: "#FFFFFF"
+      edgecolor: "none"
+      
+      # Statistical plots organization
+      statistical_plots:
+        create_subfolders: true
+        subfolder_structure:
+          dashboard: "01_Statistical_Dashboard"
+          model_comparisons: "02_Model_Comparisons"
+          error_analysis: "03_Error_Analysis"
+          correlation_plots: "04_Correlation_Analysis"
+          spatial_analysis: "05_Spatial_Analysis"
+          bootstrap_ci: "06_Bootstrap_CI"
+          cross_validation: "07_Cross_Validation"
+          summary_tables: "08_Summary_Tables"
+        
+        filename_template: "{plot_type}_{density_type}_{timestamp}"
+      
+      # Data export settings
+      table_export:
+        formats: ["csv", "xlsx", "txt"]
+        csv_separator: ","
+        txt_delimiter: "\t"
+        include_headers: true
+        float_precision: 4
+        
+        # Statistical results tables
+        statistical_tables:
+          error_metrics: "error_metrics_summary"
+          model_rankings: "model_rankings"
+          statistical_tests: "statistical_test_results"
+          correlation_matrix: "model_correlations"
+          bootstrap_ci: "bootstrap_confidence_intervals"
+          cross_validation: "cross_validation_results"
+
+# Model Definitions - Same as main config but with statistical analysis notes
+models:
+  AmapVox_TLS:
+    model_type: "amapvox"
+    display_color_index: 0
+    description: "Terrestrial LiDAR Beer-Lambert approach"
+    file_paths:
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/amapvox_tls_merged_pad_unfiltered_transect.csv"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/amapvox_tls_merged_wad_unfiltered_transect.csv"
+
+  AmapVox_ULS:
+    model_type: "amapvox"
+    display_color_index: 1
+    description: "Unmanned LiDAR Beer-Lambert approach"
+    file_paths:
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/amapvox_pad_uls_transect.csv"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/amapvox_uls_britz_oak_leaf_off_000.csv"
+
+  VoxLAD_TLS:
+    model_type: "voxlad"
+    display_color_index: 2
+    description: "Multi-scan terrestrial LiDAR approach"
+    file_paths:
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_pad_transect.txt"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/voxlad_tls_britz_oak_leaf_off_wad_g_erecto_transect.txt"
+      lad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/lad/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_lad_transect.txt"
+
+  VoxPy_Combined:
+    model_type: "voxpy"
+    display_color_index: 3
+    description: "Direct density method with vertical calibration"
+    file_paths:
+      use_combined_file: true
+      combined: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/model/voxpy-v7_002/voxpy-v7_002_003_enhanced_vertical_calibration_results/voxpy-v7_002_003_enhanced_combined_density.csv"
+
+# Ground Truth Data Configuration
+ground_truth:
+  # Primary ground truth file
+  data_file: "ground_truth_data/lai_data_with_range_columns.csv"
+  
+  # Method preferences for reference values
+  reference_methods:
+    LAI: ["Litter Fall"]                    # Gold standard
+    WAI: ["Solariscope SOL 300", "HemispheR (app)"]  # Ground truth methods
+    PAI: ["Solariscope SOL 300", "HemispheR (app)"]  # Ground truth methods
+  
+  # Quality assessment
+  quality_thresholds:
+    excellent_agreement: 5.0    # % difference < 5%
+    good_agreement: 10.0        # % difference < 10%
+    acceptable_agreement: 20.0  # % difference < 20%
+  
+  # Temporal matching (for time-series data)
+  temporal_matching:
+    tolerance_days: 30          # Days tolerance for temporal matching
+    prefer_closest: true        # Use closest date if multiple options
+    
+# Reporting Configuration
+reporting:
+  # Automatic report generation
+  generate_summary_report: true
+  generate_detailed_report: true
+  
+  # Report sections
+  include_sections:
+    executive_summary: true
+    statistical_tests: true
+    model_rankings: true
+    error_analysis: true
+    spatial_analysis: true
+    recommendations: true
+  
+  # Report formatting
+  report_format: ["txt", "markdown", "html"]
+  include_figures: true
+  figure_references: true
+  
+  # Publication support
+  citation_format: "nature"
+  generate_figure_captions: true
+  include_methods_section: true

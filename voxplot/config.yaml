@@ -1,0 +1,228 @@
+# VoxPlot Configuration File
+# Advanced voxel-based forest structure analysis configuration
+# Publication-quality settings for Nature journal standards
+
+analysis:
+  # Analysis Parameters
+  crown_base_height: 0.0
+  voxel_size: 0.25
+  min_density: 0.0001
+  comparison_mode: "same_density_type_different_model_type"
+  density_types: ["lad", "wad", "pad"]
+  output_dir: "voxplot_results_003"
+  
+  # Visualization Parameters - Publication Quality
+  visualization:
+    # Output format control
+    plot_mode: "combined_plots"  # Options: "combined_plots", "single_plots"
+    
+    # Figure sizes for different plot types [width, height] in inches
+    figsize_large: [20, 24]      # For comprehensive comparison matrices
+    figsize_medium: [16, 12]     # For multi-panel plots  
+    figsize_small: [12, 9]       # For single plots
+    figsize_table: [16, 10]      # For table visualizations
+    
+    # DPI for publication quality (Nature journal standard)
+    dpi: 600                     # High resolution for publication
+    
+    # Publication Quality Typography
+    # =============================
+    typography:
+      # Font families (Nature journal compatible)
+      title_font: "Helvetica"       # Primary font for titles
+      body_font: "Helvetica"        # Font for labels and text
+      fallback_fonts: ["Arial", "DejaVu Sans", "Liberation Sans"]
+      
+      # Font sizes (scaled appropriately for publication)
+      title_fontsize: 24           # Main figure titles
+      subtitle_fontsize: 18        # Model names and section titles
+      label_fontsize: 14           # Axis labels and legend labels
+      tick_fontsize: 11            # Axis tick labels
+      annotation_fontsize: 12      # Area/index annotations on plots
+      table_header_fontsize: 13    # Table headers
+      table_cell_fontsize: 11      # Table cell text
+      
+      # Font weights and styles
+      title_weight: "bold"
+      subtitle_weight: "semibold"
+      label_weight: "normal"
+      
+      # Text spacing and margins
+      title_pad: 25                # Padding around titles
+      label_pad: 15                # Padding around labels
+      text_margin: 0.05            # Margin for text positioning (fraction of axes)
+    
+    # Publication Quality Color Palette
+    # =================================
+    colors:
+      # Nature journal color scheme - pastel but vibrant
+      model_palette: [
+        "#4A90E2",    # Professional blue (AmapVox)
+        "#E74C3C",    # Vibrant coral red (VoxLAD) 
+        "#2ECC71",    # Fresh green (VoxPy)
+        "#9B59B6",    # Rich purple (Model 4)
+        "#F39C12",    # Warm orange (Model 5)
+        "#1ABC9C",    # Teal (Model 6)
+        "#34495E",    # Slate gray (Model 7)
+        "#E67E22"     # Burnt orange (Model 8)
+      ]
+      
+      # Colormap for density visualizations
+      density_colormap: "plasma"   # Options: viridis, plasma, inferno, magma, cividis
+      
+      # Background and plot styling
+      figure_background: "#FFFFFF"  # Pure white for publication
+      plot_background: "#FFFFFF"    # White plot backgrounds
+      grid_color: "#E5E5E5"        # Light gray grid lines
+      text_color: "#2C3E50"        # Dark gray text
+      
+      # Color scale settings
+      color_scale_min: 0.0
+      color_scale_max: 40.0
+      
+      # Transparency settings
+      plot_alpha: 0.8              # General plot transparency
+      fill_alpha: 0.6              # Fill transparency
+      marker_alpha: 0.7            # Marker transparency
+    
+    # Layout and Spacing - Publication Standards
+    # ==========================================
+    layout:
+      # Crown layer visualization spacing
+      crown_layers:
+        subplot_spacing_horizontal: 0.15  # Reduced for better fit
+        subplot_spacing_vertical: 0.20    # Optimized vertical spacing
+        
+        # Colorbar positioning and sizing  
+        colorbar_width: 0.015            # Narrower colorbar
+        colorbar_position: [0.94, 0.15, 0.015, 0.7]  # [left, bottom, width, height]
+        colorbar_label_pad: 20           # Distance from colorbar to label
+        
+        # Text positioning
+        row_label_position: 0.01         # Position of row labels from left edge
+        title_position: 1.02             # Model title position above subplots
+        metrics_position: 0.98           # Metrics text position
+        
+        # Layer boundary lines in vertical slices
+        boundary_line_color: "#E74C3C"   # Coral red for visibility
+        boundary_line_style: "--"        # Dashed lines
+        boundary_line_width: 2.0         # Thicker lines for publication
+        boundary_line_alpha: 0.8         # Good visibility
+      
+      # 3D visualization improvements
+      three_d:
+        voxel_type: "cubes"              # Render as 3D cubes
+        cube_size_factor: 0.9            # Larger cubes for better visibility
+        cube_alpha: 0.7                  # Good transparency balance
+        cube_edge_width: 0.3             # Thin edges
+        cube_edge_color: "#34495E"       # Subtle edge color
+        
+        # Colorbar for 3D plots
+        colorbar_shrink: 0.8             # Colorbar size
+        colorbar_aspect: 25              # Aspect ratio
+        colorbar_pad: 0.02               # Closer to plot
+        
+        # Performance and quality
+        max_voxels_per_model: 8000       # Higher quality rendering
+        viewing_angle_elevation: 20      # Better 3D perspective
+        viewing_angle_azimuth: 45        # Optimal viewing angle
+      
+      # Distribution plots
+      distributions:
+        # Outlier management for cleaner plots
+        outlier_percentile_lower: 2.0    # Conservative outlier removal
+        outlier_percentile_upper: 98.0   
+        remove_outliers: true
+        
+        # Histogram and distribution settings
+        histogram_bins: 35               # More bins for smoother curves
+        kde_bandwidth: "scott"           # Optimal KDE bandwidth
+        
+        # Box plot styling
+        box_notch: true                  # Show confidence intervals
+        whisker_length: 1.5              # Standard whisker length
+        
+        # Grid and styling
+        grid_alpha: 0.3                  # Subtle grid lines
+        spine_width: 1.2                 # Thicker plot borders
+      
+      # Table styling
+      tables:
+        cell_padding: 0.08               # More padding for readability
+        row_height: 1.8                  # Taller rows
+        alternating_colors: ["#F8F9FA", "#FFFFFF"]  # Subtle alternating rows
+        header_color: "#34495E"          # Professional header color
+        header_text_color: "#FFFFFF"     # White text on dark header
+        border_width: 1.5                # Table border width
+        border_color: "#BDC3C7"         # Light gray borders
+    
+    # Export Settings - Publication Quality
+    # ====================================
+    export:
+      # File formats for different uses
+      formats: ["png", "pdf", "svg"]    # Multiple formats for flexibility
+      default_format: "png"             # Primary format
+      
+      # Quality settings optimized for publication
+      png_dpi: 600                      # High resolution PNG
+      pdf_dpi: 600                      # Vector PDF quality
+      svg_dpi: 600                      # Scalable vector graphics
+      
+      # Output settings
+      bbox_inches: "tight"              # Tight bounding box
+      pad_inches: 0.2                   # Small padding
+      facecolor: "#FFFFFF"              # White background
+      edgecolor: "none"                 # No edge color
+      
+      # Single plot organization (when plot_mode = "single_plots")
+      single_plots:
+        create_subfolders: true         # Organize into themed folders
+        subfolder_structure:
+          crown_layers: "01_Crown_Layer_Analysis"
+          vertical_profiles: "02_Vertical_Profiles" 
+          distributions: "03_Distribution_Analysis"
+          metrics_tables: "04_Metrics_Tables"
+          spatial_analysis: "05_Spatial_Analysis"
+          three_d_plots: "06_3D_Visualizations"
+        
+        # Naming convention for single plots
+        filename_template: "{analysis_type}_{density_type}_{model_name}_{timestamp}"
+      
+      # Table export settings
+      table_export:
+        formats: ["csv", "xlsx", "txt"]  # Multiple table formats
+        csv_separator: ","               # Standard CSV separator
+        txt_delimiter: "\t"              # Tab-delimited text
+        include_headers: true            # Always include headers
+        float_precision: 3               # Decimal places for numbers
+
+# Model Definitions (unchanged but with enhanced comments)
+models:
+  AmapVox_TLS:
+    model_type: "amapvox"
+    display_color_index: 0  # Will use first color from model_palette
+    file_paths:
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/amapvox_tls_merged_pad_unfiltered_transect.csv"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/amapvox_tls_merged_wad_unfiltered_transect.csv"
+
+  AmapVox_ULS:
+    model_type: "amapvox"
+    display_color_index: 1  # Will use second color from model_palette
+    file_paths:
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/amapvox_pad_uls_transect.csv"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/amapvox_uls_britz_oak_leaf_off_000.csv"
+
+  VoxLAD_TLS:
+    model_type: "voxlad"
+    display_color_index: 2  # Will use third color from model_palette
+    file_paths:
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_pad_transect.txt"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/voxlad_tls_britz_oak_leaf_off_wad_g_erecto_transect.txt"
+      lad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/lad/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_lad_transect.txt"
+
+  VoxPy_Combined:
+    model_type: "voxpy"
+    display_color_index: 3  # Will use fourth color from model_palette
+    file_paths:
+      use_combined_file: true
+      combined: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/model/voxpy-v7_002/voxpy-v7_002_003_enhanced_vertical_calibration_results/voxpy-v7_002_003_enhanced_combined_density.csv"

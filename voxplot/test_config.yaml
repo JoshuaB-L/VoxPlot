@@ -1,0 +1,118 @@
+# VoxPlot Test Configuration
+# This configuration file is designed for testing and demonstrates
+# the correct format and structure for VoxPlot analysis
+
+analysis:
+  # Basic analysis parameters
+  crown_base_height: 0.0    # Start analysis from ground level (0 meters)
+  voxel_size: 0.25          # 25cm voxel resolution
+  min_density: 0.05         # Minimum density threshold
+  
+  # Comparison configuration
+  comparison_mode: "same_density_type_different_model_type"
+  density_types: ["lad", "wad", "pad"]  # Analyze all density types
+  
+  # Output configuration
+  output_dir: "test_results"
+  
+  # Visualization settings for testing
+  visualization:
+    figsize_large: [16, 18]   # Slightly smaller for faster generation
+    figsize_medium: [12, 10]
+    figsize_small: [10, 6]
+    dpi: 150                  # Lower DPI for faster generation
+    color_scale_max: 40.0
+
+# Test Models Configuration
+# Replace these paths with your actual data files
+models:
+  
+  # AmapVox TLS Model Configuration
+  AmapVox_TLS:
+    model_type: "amapvox"
+    file_paths:
+      # Update these paths to point to your actual AmapVox CSV files
+      # Expected format: x,y,z,density_value
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/amapvox_tls_merged_pad_unfiltered_transect.csv"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/amapvox_tls_merged_wad_unfiltered_transect.csv"
+      # lad: "/path/to/amapvox_tls_lad.csv"  # Uncomment and update path if available
+
+  # AmapVox ULS Model Configuration  
+  AmapVox_ULS:
+    model_type: "amapvox"
+    file_paths:
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/amapvox_pad_uls_transect.csv"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/amapvox_uls_britz_oak_leaf_off_000.csv"
+
+  # VoxLAD TLS Model Configuration
+  VoxLAD_TLS:
+    model_type: "voxlad"
+    file_paths:
+      # Update these paths to point to your actual VoxLAD TXT files
+      # Expected format: space-delimited with multiple LAD columns
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_pad_transect.txt"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/voxlad_tls_britz_oak_leaf_off_wad_g_erecto_transect.txt"
+      lad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/lad/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_lad_transect.txt"
+
+  # VoxPy Individual Files Model Configuration
+  VoxPy_Individual:
+    model_type: "voxpy"
+    file_paths:
+      # Update these paths to point to your actual VoxPy CSV files
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/model/voxpy-v7_002/voxpy-v7_002_003_enhanced_vertical_calibration_results/voxpy-v7_002_003_enhanced_wad.csv"
+      lad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/model/voxpy-v7_002/voxpy-v7_002_003_enhanced_vertical_calibration_results/voxpy-v7_002_003_enhanced_lad.csv"
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/model/voxpy-v7_002/voxpy-v7_002_003_enhanced_vertical_calibration_results/voxpy-v7_002_003_enhanced_pad.csv"
+
+# Alternative configurations for different testing scenarios
+# Uncomment one of these sections to test different analysis modes
+
+# # Configuration 1: LAD-only comparison between models
+# analysis:
+#   crown_base_height: 0.7
+#   voxel_size: 0.25
+#   min_density: 0.05
+#   comparison_mode: "same_density_type_different_model_type"
+#   density_types: ["lad"]
+#   output_dir: "lad_comparison_results"
+
+# # Configuration 2: Multi-density analysis for single model
+# analysis:
+#   crown_base_height: 0.7
+#   voxel_size: 0.25
+#   min_density: 0.05
+#   comparison_mode: "different_density_type_same_model_type"
+#   density_types: ["wad", "lad", "pad"]
+#   output_dir: "multi_density_results"
+# models:
+#   # Keep only one model with all density types
+#   VoxPy_Individual:
+#     model_type: "voxpy"
+#     file_paths:
+#       wad: "/path/to/voxpy_wad.csv"
+#       lad: "/path/to/voxpy_lad.csv"  
+#       pad: "/path/to/voxpy_pad.csv"
+
+# # Configuration 3: High-resolution detailed analysis
+# analysis:
+#   crown_base_height: 1.0
+#   voxel_size: 0.125    # Higher resolution
+#   min_density: 0.01    # Lower threshold for sparse data
+#   comparison_mode: "same_density_type_different_model_type"
+#   density_types: ["lad"]
+#   output_dir: "high_res_results"
+#   visualization:
+#     figsize_large: [20, 24]
+#     dpi: 300
+#     color_scale_max: 60.0
+
+# # Configuration 4: Fast processing for large datasets
+# analysis:
+#   crown_base_height: 2.0
+#   voxel_size: 0.5      # Lower resolution for speed
+#   min_density: 0.1     # Higher threshold to reduce data
+#   comparison_mode: "same_density_type_different_model_type"
+#   density_types: ["lad", "pad"]
+#   output_dir: "fast_processing_results"
+#   visualization:
+#     figsize_large: [12, 14]
+#     dpi: 150
