@@ -34,7 +34,7 @@ import yaml
 # VoxPlot core modules
 from data_loader import DataLoader
 from config_manager import ConfigManager
-from utils import setup_logging, create_output_directory
+from utils import setup_logging
 
 # ML analysis modules
 from ml_analyzer import SpatialPatternAnalyzer
@@ -72,18 +72,21 @@ class MLEnhancedVoxPlotAnalysis:
         self.verbose = verbose
         
         # Setup logging
-        log_level = logging.DEBUG if verbose else logging.INFO
-        setup_logging(level=log_level)
+        setup_logging(verbose=verbose)
         self.logger = logging.getLogger(__name__)
         
         # Load configuration
-        self.config_manager = ConfigManager(self.config_path)
-        self.config = self.config_manager.load_config()
+        self.config_manager = ConfigManager()
+        self.config = self.config_manager.load_config(str(self.config_path))
         
         # Initialize components
-        self.data_loader = DataLoader(self.config)
-        self.ml_analyzer = SpatialPatternAnalyzer(self.config)
-        self.ml_visualizer = MLVisualizer(self.config)
+        self.data_loader = DataLoader()
+        # Pass only the ML config section to SpatialPatternAnalyzer
+        ml_config = self.config.get('ml_config', {})
+        self.ml_analyzer = SpatialPatternAnalyzer(ml_config)
+        # Pass only the visualization config section to MLVisualizer
+        visualization_config = self.config.get('visualization', {})
+        self.ml_visualizer = MLVisualizer(visualization_config)
         
         # Results storage
         self.loaded_data = {}
@@ -141,7 +144,7 @@ class MLEnhancedVoxPlotAnalysis:
             return {}
     
     def _load_voxel_data(self, models: Optional[List[str]] = None):
-        """Load voxel data for all configured models."""
+        """Load voxel data for all configured models using proven statistical framework approach."""
         available_models = self.config.get('models', {})
         
         if models:
@@ -155,51 +158,34 @@ class MLEnhancedVoxPlotAnalysis:
         
         self.logger.info(f"Loading data for {len(models_to_load)} models")
         
+        # Use the same proven approach as statistical framework
         for model_name, model_config in models_to_load.items():
             try:
                 self.logger.info(f"Loading data for model: {model_name}")
                 
-                # Load all density types for this model
-                model_data = {}
-                density_types = self.config.get('analysis', {}).get('density_types', ['lad', 'wad', 'pad'])
+                # Load model data using existing DataLoader (same as statistical framework)
+                model_datasets = self.data_loader.load_model_data(model_name, model_config)
                 
-                for density_type in density_types:
-                    if density_type in model_config.get('file_paths', {}):
-                        try:
-                            data = self.data_loader.load_model_data(model_name, density_type)
-                            if data is not None and len(data) > 0:
-                                model_data[density_type] = data
-                                self.logger.info(f"Loaded {len(data)} voxels for {model_name}_{density_type}")
-                        except Exception as e:
-                            self.logger.warning(f"Failed to load {density_type} for {model_name}: {e}")
-                
-                # Combine density types if multiple are available
-                if model_data:
-                    if len(model_data) == 1:
-                        # Single density type
-                        density_type = list(model_data.keys())[0]
-                        combined_data = model_data[density_type].copy()
-                        combined_data['density_type'] = density_type
-                    else:
-                        # Multiple density types - combine with density type labels
-                        combined_data = []
-                        for density_type, data in model_data.items():
-                            data_copy = data.copy()
-                            data_copy['density_type'] = density_type
-                            combined_data.append(data_copy)
-                        combined_data = pd.concat(combined_data, ignore_index=True)
+                if model_datasets:
+                    # Store the datasets dict directly (same as statistical framework)
+                    self.loaded_data[model_name] = model_datasets
+                    self.logger.info(f"Loaded {len(model_datasets)} density types for {model_name}: {list(model_datasets.keys())}")
                     
-                    self.loaded_data[model_name] = combined_data
-                    self.logger.info(f"Successfully loaded {len(combined_data)} total voxels for {model_name}")
+                    # Log detailed info for each density type
+                    for density_type, data in model_datasets.items():
+                        self.logger.info(f"  {model_name}_{density_type}: {len(data)} voxels")
                 else:
-                    self.logger.warning(f"No valid data loaded for model: {model_name}")
+                    self.logger.warning(f"No data loaded for {model_name}")
                     
             except Exception as e:
                 self.logger.error(f"Failed to load model {model_name}: {e}")
+                self.logger.debug("Traceback:", exc_info=True)
                 continue
         
         if self.loaded_data:
             self.logger.info(f"Data loading complete: {len(self.loaded_data)} models loaded")
+            total_datasets = sum(len(datasets) for datasets in self.loaded_data.values())
+            self.logger.info(f"Total datasets loaded: {total_datasets}")
         else:
             self.logger.error("No models loaded successfully")
     
@@ -227,8 +213,43 @@ class MLEnhancedVoxPlotAnalysis:
         self.logger.info(f"Running ML analyses: {analyses_to_run}")
         
         try:
+            # Convert data structure from {model_name: {density_type: df}} to {model_key: df}
+            # This flattens the structure for ML analysis
+            flattened_data = {}
+            total_voxels = 0
+            
+            for model_name, model_datasets in self.loaded_data.items():
+                for density_type, data in model_datasets.items():
+                    # Create unique key for each model-density combination
+                    model_key = f"{model_name}_{density_type}"
+                    
+                    # Prepare data copy with standardized column names
+                    data_copy = data.copy()
+                    
+                    # Add density_type column if not present
+                    if 'density_type' not in data_copy.columns:
+                        data_copy['density_type'] = density_type
+                    
+                    # Standardize density column name - ML analyzer expects 'density_value'
+                    if density_type in data_copy.columns:
+                        data_copy['density_value'] = data_copy[density_type]
+                        # Remove the original density type column to avoid confusion
+                        data_copy = data_copy.drop(columns=[density_type])
+                    elif 'density_value' not in data_copy.columns:
+                        # Look for other possible density columns
+                        possible_density_cols = [col for col in data_copy.columns if any(d in col.lower() for d in ['density', 'lad', 'wad', 'pad'])]
+                        if possible_density_cols:
+                            data_copy['density_value'] = data_copy[possible_density_cols[0]]
+                        else:
+                            self.logger.warning(f"No density column found for {model_key}")
+                            continue
+                    
+                    flattened_data[model_key] = data_copy
+                    total_voxels += len(data_copy)
+                    self.logger.info(f"Prepared {model_key} for ML analysis: {len(data_copy)} voxels")
+            
             # Run the comprehensive spatial pattern analysis
-            ml_results = self.ml_analyzer.analyze_spatial_patterns(self.loaded_data)
+            ml_results = self.ml_analyzer.analyze_spatial_patterns(flattened_data)
             
             self.logger.info("ML analysis completed successfully")
             
@@ -236,9 +257,10 @@ class MLEnhancedVoxPlotAnalysis:
             ml_results['analysis_metadata'] = {
                 'timestamp': datetime.now().isoformat(),
                 'models_analyzed': list(self.loaded_data.keys()),
+                'model_density_combinations': list(flattened_data.keys()),
                 'analyses_performed': analyses_to_run,
                 'configuration': self.config_path.name,
-                'total_voxels_analyzed': sum(len(df) for df in self.loaded_data.values())
+                'total_voxels_analyzed': total_voxels
             }
             
             # Log summary statistics
@@ -308,24 +330,69 @@ class MLEnhancedVoxPlotAnalysis:
         try:
             # 1. Comprehensive ML Dashboard
             self.logger.info("Creating comprehensive ML dashboard")
+            
+            # Create flattened data for dashboard visualization (same as analysis preparation)
+            flattened_data = {}
+            for model_name, model_datasets in self.loaded_data.items():
+                for density_type, data in model_datasets.items():
+                    model_key = f"{model_name}_{density_type}"
+                    data_copy = data.copy()
+                    
+                    if 'density_type' not in data_copy.columns:
+                        data_copy['density_type'] = density_type
+                    
+                    # Standardize density column name for visualization
+                    if density_type in data_copy.columns:
+                        data_copy['density_value'] = data_copy[density_type]
+                        data_copy = data_copy.drop(columns=[density_type])
+                    elif 'density_value' not in data_copy.columns:
+                        possible_density_cols = [col for col in data_copy.columns if any(d in col.lower() for d in ['density', 'lad', 'wad', 'pad'])]
+                        if possible_density_cols:
+                            data_copy['density_value'] = data_copy[possible_density_cols[0]]
+                    
+                    flattened_data[model_key] = data_copy
+            
             dashboard_fig = self.ml_visualizer.create_comprehensive_ml_dashboard(
                 self.ml_results, 
-                self.loaded_data,
+                flattened_data,
                 output_path=viz_dir
             )
             
             # 2. Individual 3D clustering visualizations
             self.logger.info("Creating 3D clustering visualizations")
-            for model_name in self.loaded_data.keys():
+            
+            # Create flattened data for visualization (same as used in analysis)
+            flattened_data = {}
+            for model_name, model_datasets in self.loaded_data.items():
+                for density_type, data in model_datasets.items():
+                    model_key = f"{model_name}_{density_type}"
+                    data_copy = data.copy()
+                    
+                    if 'density_type' not in data_copy.columns:
+                        data_copy['density_type'] = density_type
+                    
+                    # Standardize density column name for visualization
+                    if density_type in data_copy.columns:
+                        data_copy['density_value'] = data_copy[density_type]
+                        data_copy = data_copy.drop(columns=[density_type])
+                    elif 'density_value' not in data_copy.columns:
+                        possible_density_cols = [col for col in data_copy.columns if any(d in col.lower() for d in ['density', 'lad', 'wad', 'pad'])]
+                        if possible_density_cols:
+                            data_copy['density_value'] = data_copy[possible_density_cols[0]]
+                    
+                    flattened_data[model_key] = data_copy
+            
+            # Create 3D clustering visualizations for each model-density combination
+            for model_key in flattened_data.keys():
                 try:
                     clustering_fig = self.ml_visualizer.create_3d_clustering_visualization(
-                        self.loaded_data,
+                        flattened_data,
                         self.ml_results,
-                        model_name,
+                        model_key,
                         output_path=viz_dir
                     )
                 except Exception as e:
-                    self.logger.warning(f"Failed to create 3D clustering for {model_name}: {e}")
+                    self.logger.warning(f"Failed to create 3D clustering for {model_key}: {e}")
             
             self.logger.info(f"ML visualizations saved to: {viz_dir}")
             

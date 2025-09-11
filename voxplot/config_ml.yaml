@@ -10,6 +10,11 @@ analysis:
   min_density: 0.001              # Minimum density threshold for analysis
   output_dir: "ml_analysis_results"  # Output directory for all results
   
+  # Comparison mode for ML analysis
+  # Options: same_density_type_same_model_type, same_density_type_different_model_type,
+  #          different_density_type_same_model_type, different_density_type_different_model_type
+  comparison_mode: "different_density_type_different_model_type"
+  
   # Density types to analyze
   density_types: ["lad", "wad", "pad"]
   
@@ -226,43 +231,44 @@ visualization:
     diverging_cmap: "RdBu_r"        # For difference/comparison plots
     categorical_cmap: "Set3"        # For categorical data
 
-# Models configuration
+# Models configuration - Using working file paths from statistical framework
 models:
   # AmapVox TLS model
   AmapVox_TLS:
     model_type: "amapvox"
-    description: "AmapVox Terrestrial Laser Scanning model"
+    display_color_index: 0
+    description: "Terrestrial LiDAR Beer-Lambert approach"
     file_paths:
-      pad: "data/amapvox_tls_merged_pad_unfiltered_transect.csv"
-      wad: "data/amapvox_tls_merged_wad_unfiltered_transect.csv"
-    expected_columns: ["x", "y", "z", "density_value"]
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/amapvox_tls_merged_pad_unfiltered_transect.csv"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/amapvox_tls_merged_wad_unfiltered_transect.csv"
     
   # AmapVox ULS model  
   AmapVox_ULS:
     model_type: "amapvox"
-    description: "AmapVox Unmanned Laser Scanning model"
+    display_color_index: 1
+    description: "Unmanned LiDAR Beer-Lambert approach"
     file_paths:
-      pad: "data/amapvox_pad_uls_transect.csv"
-      wad: "data/amapvox_uls_britz_oak_leaf_off_000.csv"
-    expected_columns: ["x", "y", "z", "density_value"]
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/amapvox_pad_uls_transect.csv"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/amapvox_uls_britz_oak_leaf_off_000.csv"
     
   # VoxLAD TLS model
   VoxLAD_TLS:
     model_type: "voxlad"
-    description: "VoxLAD Terrestrial Laser Scanning model"
+    display_color_index: 2
+    description: "Multi-scan terrestrial LiDAR approach"
     file_paths:
-      pad: "data/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_pad_transect.txt"
-      wad: "data/voxlad_tls_britz_oak_leaf_off_wad_g_erecto_transect.txt"
-      lad: "data/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_lad_transect.txt"
-    expected_columns: ["x", "y", "z", "density_1", "percent_explored_1"]
+      pad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/pad/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_pad_transect.txt"
+      wad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_off/wad/voxlad_tls_britz_oak_leaf_off_wad_g_erecto_transect.txt"
+      lad: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/plots/wad_lad_pad_comp/leaf_on/lad/voxlad_v3_britz_oak_seg_scan_pos_42_43_53_g_plagio_vox_0_25_r_0_00035_lad_transect.txt"
     
   # VoxPy Combined model
   VoxPy_Combined:
     model_type: "voxpy"
-    description: "VoxPy Combined density analysis model"
+    display_color_index: 3
+    description: "Direct density method with vertical calibration"
     file_paths:
-      combined: "data/voxpy-v7_002_003_enhanced_combined_density.csv"
-    expected_columns: ["x", "y", "z", "density_type", "density_value"]
+      use_combined_file: true
+      combined: "/mnt/g/My Drive/Bath-Uni/PhD/Structure/Paper-4-PALM-PCM-Study/Code/python/voxpy/model/voxpy-v7_002/voxpy-v7_002_003_enhanced_vertical_calibration_results/voxpy-v7_002_003_enhanced_combined_density.csv"
 
 # Ground truth data (if available for validation)
 ground_truth:

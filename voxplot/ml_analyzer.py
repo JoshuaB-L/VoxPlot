@@ -327,7 +327,7 @@ class SpatialPatternAnalyzer:
         best_kmeans = None
         best_kmeans_score = -1
         
-        for n_clusters in self.config['clustering']['kmeans_clusters']:
+        for n_clusters in self.config['clustering']['kmeans']['cluster_range']:
             if len(X_scaled) < n_clusters:
                 continue
                 
@@ -357,8 +357,8 @@ class SpatialPatternAnalyzer:
         best_dbscan = None
         best_dbscan_score = -1
         
-        for eps in self.config['clustering']['dbscan_eps']:
-            for min_samples in self.config['clustering']['dbscan_min_samples']:
+        for eps in self.config['clustering']['dbscan']['eps_values']:
+            for min_samples in self.config['clustering']['dbscan']['min_samples']:
                 dbscan = DBSCAN(eps=eps, min_samples=min_samples)
                 cluster_labels = dbscan.fit_predict(X_scaled)
                 
@@ -498,7 +498,7 @@ class SpatialPatternAnalyzer:
         }
         
         # PCA Analysis
-        for n_components in self.config['dimensionality_reduction']['pca_components']:
+        for n_components in self.config['dimensionality_reduction']['pca']['n_components']:
             if n_components < min(X_scaled.shape):
                 pca = PCA(n_components=n_components)
                 X_pca = pca.fit_transform(X_scaled)
@@ -513,10 +513,10 @@ class SpatialPatternAnalyzer:
         
         # t-SNE Analysis
         if len(X_scaled) <= 10000:  # t-SNE is computationally expensive
-            for perplexity in self.config['dimensionality_reduction']['tsne_perplexity']:
+            for perplexity in self.config['dimensionality_reduction']['tsne']['perplexity']:
                 if perplexity < len(X_scaled) / 3:
                     tsne = TSNE(
-                        n_components=self.config['dimensionality_reduction']['tsne_components'],
+                        n_components=self.config['dimensionality_reduction']['tsne']['n_components'],
                         perplexity=perplexity,
                         random_state=42
                     )
@@ -531,12 +531,12 @@ class SpatialPatternAnalyzer:
         
         # UMAP Analysis (if available)
         if UMAP_AVAILABLE and len(X_scaled) > 15:
-            for n_neighbors in self.config['dimensionality_reduction']['umap_neighbors']:
+            for n_neighbors in self.config['dimensionality_reduction']['umap']['n_neighbors']:
                 if n_neighbors < len(X_scaled):
                     try:
                         umap_model = umap.UMAP(
                             n_neighbors=n_neighbors,
-                            n_components=self.config['dimensionality_reduction']['umap_components'],
+                            n_components=self.config['dimensionality_reduction']['umap']['n_components'],
                             random_state=42
                         )
                         X_umap = umap_model.fit_transform(X_scaled)
@@ -652,7 +652,7 @@ class SpatialPatternAnalyzer:
             distance_matrix = squareform(distances)
             
             # Find clumps using density-based approach
-            threshold = self.config['spatial_analysis']['clumping_threshold']
+            threshold = self.config['spatial_analysis']['clumping']['clumping_threshold']
             high_density_mask = densities > np.percentile(densities, 75)
             
             clump_results = {
@@ -1464,7 +1464,7 @@ class SpatialPatternAnalyzer:
         regression_results = {}
         
         # Linear regression
-        if self.config['regression']['enable_linear']:
+        if self.config['regression']['linear_regression']['enable']:
             lr = LinearRegression()
             lr.fit(X, y)
             
@@ -1475,7 +1475,7 @@ class SpatialPatternAnalyzer:
             }
         
         # Random Forest (if enabled and sufficient data)
-        if self.config['regression']['enable_rf'] and len(data) >= 5:
+        if self.config['regression']['random_forest']['enable'] and len(data) >= 5:
             rf = RandomForestRegressor(n_estimators=10, random_state=42)
             rf.fit(X, y)
             

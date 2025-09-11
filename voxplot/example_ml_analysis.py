@@ -133,12 +133,49 @@ def example_programmatic_analysis():
             'clustering': {
                 'kmeans_clusters': [3, 5, 8],
                 'dbscan_eps': [1.0, 2.0],
-                'dbscan_min_samples': [5, 10]
+                'dbscan_min_samples': [5, 10],
+                'enable_hierarchical': True
+            },
+            'dimensionality_reduction': {
+                'pca_components': [2, 3],
+                'tsne_perplexity': [30],
+                'tsne_components': 2,
+                'umap_neighbors': [15],
+                'umap_components': 2
+            },
+            'regression': {
+                'enable_linear': True,
+                'enable_rf': True,
+                'enable_xgboost': False,
+                'cross_validation_folds': 3
             },
             'spatial_analysis': {
-                'height_layers': ['whole', 'upper', 'lower'],
+                'height_layers': ['whole', 'upper'],
+                'density_types': ['density_value'],
                 'clumping_threshold': 0.1,
-                'neighborhood_radius': 1.5
+                'neighborhood_radius': 1.0
+            },
+            'figure_settings': {
+                'dpi': 300,
+                'figsize_large': [16, 20],
+                'figsize_medium': [12, 10],
+                'figsize_small': [10, 8],
+                'figsize_square': [12, 12]
+            },
+            'typography': {
+                'title_fontsize': 18,
+                'subtitle_fontsize': 16,
+                'label_fontsize': 14,
+                'tick_fontsize': 12,
+                'annotation_fontsize': 12,
+                'legend_fontsize': 12
+            },
+            'colors': {
+                'model_palette': ['#FF5733', '#33C1FF', '#33FF57', '#FF33C1'],
+                'density_colors': {'lad': '#2ECC71', 'wad': '#8B4513', 'pad': '#4A90E2'},
+                'cluster_colors': ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
+                'diverging_cmap': 'RdBu_r',
+                'sequential_cmap': 'plasma'
             }
         }
         
@@ -195,20 +232,59 @@ def example_custom_configuration():
     try:
         # Create custom configuration
         custom_config = {
+            'clustering': {
+                'kmeans_clusters': [3, 5],
+                'dbscan_eps': [1.0, 2.0],
+                'dbscan_min_samples': [5, 10],
+                'enable_hierarchical': True
+            },
+            'dimensionality_reduction': {
+                'pca_components': [2, 3],
+                'tsne_perplexity': [30],
+                'tsne_components': 2,
+                'umap_neighbors': [15],
+                'umap_components': 2
+            },
+            'regression': {
+                'enable_linear': True,
+                'enable_rf': True,
+                'enable_xgboost': False,
+                'cross_validation_folds': 3
+            },
+            'spatial_analysis': {
+                'height_layers': ['whole', 'upper'],
+                'density_types': ['density_value'],
+                'clumping_threshold': 0.1,
+                'neighborhood_radius': 1.0
+            },
             'analysis': {
                 'crown_base_height': 4.0,
                 'voxel_size': 0.5,
                 'min_density': 0.005,
                 'output_dir': 'custom_ml_results',
-                'density_types': ['lad', 'pad']
+                'density_types': ['density_value']
             },
-            'visualization': {
+            'figure_settings': {
                 'dpi': 300,
                 'figsize_large': [16, 20],
-                'colors': {
-                    'model_palette': ['#FF5733', '#33C1FF', '#33FF57', '#FF33C1'],
-                    'sequential_cmap': 'plasma'
-                }
+                'figsize_medium': [12, 10],
+                'figsize_small': [10, 8],
+                'figsize_square': [12, 12]
+            },
+            'typography': {
+                'title_fontsize': 18,
+                'subtitle_fontsize': 16,
+                'label_fontsize': 14,
+                'tick_fontsize': 12,
+                'annotation_fontsize': 12,
+                'legend_fontsize': 12
+            },
+            'colors': {
+                'model_palette': ['#FF5733', '#33C1FF', '#33FF57', '#FF33C1'],
+                'density_colors': {'lad': '#2ECC71', 'wad': '#8B4513', 'pad': '#4A90E2'},
+                'cluster_colors': ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'],
+                'diverging_cmap': 'RdBu_r',
+                'sequential_cmap': 'plasma'
             }
         }
         
