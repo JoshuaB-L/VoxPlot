@@ -28,6 +28,9 @@ from datetime import datetime
 
 # Core ML libraries
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+
+# ML Optimization module
+from ml_optimizer import MLOptimizer, OptimizedClustering
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
@@ -75,12 +78,27 @@ class SpatialPatternAnalyzer:
     - Model comparison through ML
     """
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
-        """Initialize spatial pattern analyzer."""
+    def __init__(self, config: Optional[Dict[str, Any]] = None, 
+                 full_config: Optional[Dict[str, Any]] = None):
+        """
+        Initialize spatial pattern analyzer with optimization support.
+        
+        Args:
+            config: ML-specific configuration (ml_config section)
+            full_config: Complete configuration including analysis settings
+        """
         self.logger = logging.getLogger(__name__)
         self.config = config or self._get_default_config()
         self.scaler = StandardScaler()
         self.results = {}
+        
+        # Initialize ML optimizer if full configuration provided
+        if full_config:
+            self.optimizer = MLOptimizer(full_config)
+            self.logger.info("ML Optimizer integrated with Spatial Pattern Analyzer")
+        else:
+            self.optimizer = None
+            self.logger.info("ML Optimizer not available - using standard methods")
         
     def _get_default_config(self) -> Dict[str, Any]:
         """Get default analysis configuration."""
@@ -137,6 +155,11 @@ class SpatialPatternAnalyzer:
         # Process each model
         for model_name, df in data_dict.items():
             self.logger.info(f"Analyzing spatial patterns for {model_name}")
+            
+            # Apply optimization preprocessing if optimizer available
+            if self.optimizer:
+                df = self.optimizer.optimize_data_for_analysis(df, model_name)
+                self.logger.info(f"Applied optimization preprocessing for {model_name}: {len(df)} voxels")
             
             # Prepare features for ML analysis
             features = self._prepare_features(df)
@@ -213,8 +236,10 @@ class SpatialPatternAnalyzer:
             
         # Density-based features
         if 'density_value' in features.columns:
-            # Density statistics in neighborhood
-            features['density_log'] = np.log1p(features['density_value'])
+            # Safe log transformation to handle negative density values (VoxLAD can have negative PAD/LAD values)
+            # Use log1p(max(x, small_positive)) to prevent log of negative numbers causing inf/nan
+            safe_densities = np.maximum(features['density_value'], 1e-10)
+            features['density_log'] = np.log1p(safe_densities)
             features['density_squared'] = features['density_value'] ** 2
             
             # Local density variations
@@ -323,30 +348,58 @@ class SpatialPatternAnalyzer:
             'cluster_characteristics': {}
         }
         
-        # K-Means clustering
+        # K-Means clustering with optimization support
         best_kmeans = None
         best_kmeans_score = -1
         
-        for n_clusters in self.config['clustering']['kmeans']['cluster_range']:
-            if len(X_scaled) < n_clusters:
-                continue
-                
-            kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-            cluster_labels = kmeans.fit_predict(X_scaled)
+        # Use optimized clustering if available
+        if hasattr(self, 'optimizer') and self.optimizer:
+            clustering_optimizer = self.optimizer.clustering
+            algorithm = self.optimizer.get_optimal_clustering_algorithm(len(X_scaled))
             
-            if len(np.unique(cluster_labels)) > 1:
-                silhouette = silhouette_score(X_scaled, cluster_labels)
+            for n_clusters in self.config['clustering']['kmeans']['cluster_range']:
+                if len(X_scaled) < n_clusters:
+                    continue
+                
+                # Use optimized clustering
+                result = clustering_optimizer.perform_kmeans_clustering(
+                    X_scaled, n_clusters, algorithm
+                )
                 
                 clustering_results['kmeans'][n_clusters] = {
-                    'silhouette_score': silhouette,
-                    'cluster_labels': cluster_labels,
-                    'cluster_centers': kmeans.cluster_centers_,
-                    'inertia': kmeans.inertia_
+                    'silhouette_score': result['score'],
+                    'cluster_labels': result['labels'],
+                    'cluster_centers': result['centroids'],
+                    'inertia': result['inertia'],
+                    'algorithm': result['algorithm']
                 }
                 
-                if silhouette > best_kmeans_score:
-                    best_kmeans_score = silhouette
+                if result['score'] > best_kmeans_score:
+                    best_kmeans_score = result['score']
                     best_kmeans = n_clusters
+        else:
+            # Fallback to standard K-means
+            for n_clusters in self.config['clustering']['kmeans']['cluster_range']:
+                if len(X_scaled) < n_clusters:
+                    continue
+                    
+                kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+                cluster_labels = kmeans.fit_predict(X_scaled)
+                
+                if len(np.unique(cluster_labels)) > 1:
+                    silhouette = silhouette_score(X_scaled, cluster_labels)
+                    
+                    clustering_results['kmeans'][n_clusters] = {
+                        'silhouette_score': silhouette,
+                        'cluster_labels': cluster_labels,
+                        'cluster_centers': kmeans.cluster_centers_,
+                        'inertia': kmeans.inertia_,
+                        'algorithm': 'standard_kmeans'
+                    }
+                    
+                    if silhouette > best_kmeans_score:
+                        best_kmeans_score = silhouette
+                        best_kmeans = n_clusters
         
         clustering_results['best_kmeans'] = {
             'n_clusters': best_kmeans,
@@ -815,9 +868,9 @@ class SpatialPatternAnalyzer:
             
             accuracy_results['density_distribution_analysis'] = {
                 'distribution_type': self._classify_distribution(densities),
-                'normality_test': stats.normaltest(densities)[1],  # p-value
-                'outlier_percentage': self._calculate_outlier_percentage(densities),
-                'zero_density_percentage': np.sum(densities == 0) / len(densities) * 100
+                'normality_test': float(stats.normaltest(densities)[1]),  # p-value
+                'outlier_percentage': float(self._calculate_outlier_percentage(densities)),
+                'zero_density_percentage': float(np.sum(densities == 0) / len(densities) * 100)
             }
             
             # Physical plausibility checks
@@ -863,7 +916,7 @@ class SpatialPatternAnalyzer:
         upper_bound = Q3 + 1.5 * IQR
         
         outliers = (data < lower_bound) | (data > upper_bound)
-        return np.sum(outliers) / len(data) * 100
+        return float(np.sum(outliers) / len(data) * 100)
     
     def _assess_density_continuity(self, df: pd.DataFrame) -> Dict[str, Any]:
         """Assess spatial continuity of density values."""
@@ -1005,8 +1058,8 @@ class SpatialPatternAnalyzer:
             
             return {
                 'n_shadow_candidates': len(shadow_candidates),
-                'shadow_percentage': len(shadow_candidates) / len(df) * 100,
-                'average_shadow_intensity': np.mean([s['density_ratio'] for s in shadow_candidates]) if shadow_candidates else 0
+                'shadow_percentage': float(len(shadow_candidates) / len(df) * 100),
+                'average_shadow_intensity': float(np.mean([s['density_ratio'] for s in shadow_candidates])) if shadow_candidates else 0.0
             }
             
         except Exception as e:
@@ -1090,8 +1143,8 @@ class SpatialPatternAnalyzer:
         if 'density_value' in df.columns and len(df) > 20:
             # Look for signs of good occlusion correction
             density_stats = {
-                'zero_density_percentage': np.sum(df['density_value'] == 0) / len(df) * 100,
-                'very_low_density_percentage': np.sum(df['density_value'] < 0.001) / len(df) * 100
+                'zero_density_percentage': float(np.sum(df['density_value'] == 0) / len(df) * 100),
+                'very_low_density_percentage': float(np.sum(df['density_value'] < 0.001) / len(df) * 100)
             }
             
             # High percentage of zero densities might indicate poor occlusion correction

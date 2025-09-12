@@ -81,9 +81,9 @@ class MLEnhancedVoxPlotAnalysis:
         
         # Initialize components
         self.data_loader = DataLoader()
-        # Pass only the ML config section to SpatialPatternAnalyzer
+        # Pass ML config section and full config to SpatialPatternAnalyzer for optimization support
         ml_config = self.config.get('ml_config', {})
-        self.ml_analyzer = SpatialPatternAnalyzer(ml_config)
+        self.ml_analyzer = SpatialPatternAnalyzer(ml_config, full_config=self.config)
         # Pass only the visualization config section to MLVisualizer
         visualization_config = self.config.get('visualization', {})
         self.ml_visualizer = MLVisualizer(visualization_config)
@@ -352,11 +352,30 @@ class MLEnhancedVoxPlotAnalysis:
                     
                     flattened_data[model_key] = data_copy
             
-            dashboard_fig = self.ml_visualizer.create_comprehensive_ml_dashboard(
-                self.ml_results, 
-                flattened_data,
-                output_path=viz_dir
-            )
+            # DEBUG: Add comprehensive error tracking
+            import traceback
+            import sys
+            
+            try:
+                self.logger.info("DEBUG: About to call create_comprehensive_ml_dashboard")
+                dashboard_fig = self.ml_visualizer.create_comprehensive_ml_dashboard(
+                    self.ml_results, 
+                    flattened_data,
+                    output_path=viz_dir
+                )
+                self.logger.info("DEBUG: Successfully created ML dashboard")
+            except Exception as e:
+                self.logger.error(f"DEBUG: Error in create_comprehensive_ml_dashboard: {e}")
+                self.logger.error(f"DEBUG: Error type: {type(e)}")
+                self.logger.error("DEBUG: Full traceback:")
+                
+                # Get detailed traceback
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                tb_lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                for line in tb_lines:
+                    self.logger.error(f"DEBUG: {line.strip()}")
+                    
+                raise  # Re-raise the original exception
             
             # 2. Individual 3D clustering visualizations
             self.logger.info("Creating 3D clustering visualizations")
@@ -569,10 +588,10 @@ class MLEnhancedVoxPlotAnalysis:
             df.to_csv(export_dir / 'model_similarity_matrix.csv')
     
     def _prepare_results_for_json(self, results: Dict[str, Any]) -> Dict[str, Any]:
-        """Prepare results for JSON serialization by converting numpy arrays to lists."""
+        """Prepare results for JSON serialization by converting numpy arrays to lists and tuple keys to strings."""
         import json
         
-        def convert_numpy(obj):
+        def convert_for_json(obj):
             if isinstance(obj, np.ndarray):
                 return obj.tolist()
             elif isinstance(obj, np.integer):
@@ -580,13 +599,27 @@ class MLEnhancedVoxPlotAnalysis:
             elif isinstance(obj, np.floating):
                 return float(obj)
             elif isinstance(obj, dict):
-                return {key: convert_numpy(value) for key, value in obj.items()}
+                # Handle tuple keys by converting them to strings
+                converted_dict = {}
+                for key, value in obj.items():
+                    if isinstance(key, tuple):
+                        # Convert tuple to string representation
+                        str_key = str(key)
+                    elif isinstance(key, (np.integer, np.floating)):
+                        str_key = str(key)
+                    else:
+                        str_key = key
+                    converted_dict[str_key] = convert_for_json(value)
+                return converted_dict
             elif isinstance(obj, list):
-                return [convert_numpy(item) for item in obj]
+                return [convert_for_json(item) for item in obj]
+            elif isinstance(obj, tuple):
+                # Convert tuples to lists for JSON compatibility
+                return [convert_for_json(item) for item in obj]
             else:
                 return obj
         
-        return convert_numpy(results)
+        return convert_for_json(results)
     
     def _generate_ml_report(self):
         """Generate comprehensive ML analysis report."""

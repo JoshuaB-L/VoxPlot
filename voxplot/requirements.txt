@@ -23,6 +23,18 @@ scikit-image>=0.19.0     # Image processing for spatial analysis
 # xgboost>=1.6.0         # Gradient boosting for regression analysis
 # lightgbm>=3.3.0        # Alternative gradient boosting
 
+# GPU Acceleration Support (optional - for CUDA-enabled systems)
+# IMPORTANT: cuML and CuPy must be installed via conda, not pip
+# 
+# Installation commands:
+# conda install -c conda-forge -c rapidsai cuml cupy
+# 
+# For specific CUDA versions:
+# conda install -c conda-forge -c rapidsai cuml cupy=cuda11x  # CUDA 11.x
+# conda install -c conda-forge -c rapidsai cuml cupy=cuda12x  # CUDA 12.x
+#
+# DO NOT use pip install for these packages - they will fail to build
+
 # Statistical analysis
 statsmodels>=0.13.0      # Advanced statistical modeling
 

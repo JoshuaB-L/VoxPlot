@@ -38,6 +38,33 @@ import matplotlib.patches as mpatches
 
 warnings.filterwarnings('ignore', category=UserWarning)
 
+def safe_scalar_extract(value, default=0):
+    """
+    Safely extract a scalar value from potentially array-like inputs.
+    
+    Args:
+        value: Input value (scalar, array, or array-like)
+        default: Default value to return if extraction fails
+        
+    Returns:
+        Scalar numeric value
+    """
+    try:
+        if hasattr(value, '__len__') and len(value) == 1:
+            # Single-element array
+            return float(value[0]) if hasattr(value[0], '__float__') else float(value)
+        elif hasattr(value, '__len__') and len(value) > 1:
+            # Multi-element array - return first element or mean
+            return float(value[0]) if hasattr(value[0], '__float__') else default
+        elif hasattr(value, '__float__'):
+            # Scalar numeric value
+            return float(value)
+        else:
+            # Non-numeric value
+            return default
+    except (ValueError, TypeError, IndexError):
+        return default
+
 
 class MLVisualizer:
     """
@@ -145,7 +172,7 @@ class MLVisualizer:
         self.logger.info("Creating comprehensive ML dashboard")
         
         # Create large figure with complex grid
-        fig = plt.figure(figsize=self.config['figure_settings']['figsize_large'])
+        fig = plt.figure(figsize=self.config['figsize']['dashboard_large'])
         gs = gridspec.GridSpec(5, 4, figure=fig, hspace=0.3, wspace=0.25)
         
         # Main title
@@ -154,45 +181,71 @@ class MLVisualizer:
                     fontweight='bold', y=0.98)
         
         # Row 1: Clustering Analysis (spans 2 columns each)
-        ax1 = fig.add_subplot(gs[0, :2])
-        self._plot_clustering_comparison(ax1, ml_results)
+        try:
+            self.logger.info("DEBUG: Creating clustering comparison plot")
+            ax1 = fig.add_subplot(gs[0, :2])
+            self._plot_clustering_comparison(ax1, ml_results)
+            self.logger.info("DEBUG: Clustering comparison plot completed")
+        except Exception as e:
+            self.logger.error(f"DEBUG: Error in clustering comparison: {e}")
+            import traceback
+            self.logger.error(f"DEBUG: Traceback: {traceback.format_exc()}")
         
-        ax2 = fig.add_subplot(gs[0, 2:])
-        self._plot_cluster_characteristics(ax2, ml_results)
+        try:
+            self.logger.info("DEBUG: Creating cluster characteristics plot")
+            ax2 = fig.add_subplot(gs[0, 2:])
+            self._plot_cluster_characteristics(ax2, ml_results)
+            self.logger.info("DEBUG: Cluster characteristics plot completed")
+        except Exception as e:
+            self.logger.error(f"DEBUG: Error in cluster characteristics: {e}")
+            import traceback
+            self.logger.error(f"DEBUG: Traceback: {traceback.format_exc()}")
         
         # Row 2: Dimensionality Reduction
-        ax3 = fig.add_subplot(gs[1, 0])
-        self._plot_pca_analysis(ax3, ml_results)
+        plot_functions = [
+            (gs[1, 0], self._plot_pca_analysis, "PCA analysis"),
+            (gs[1, 1], self._plot_tsne_visualization, "t-SNE visualization"), 
+            (gs[1, 2], self._plot_feature_importance, "feature importance"),
+            (gs[1, 3], self._plot_explained_variance, "explained variance")
+        ]
         
-        ax4 = fig.add_subplot(gs[1, 1])
-        self._plot_tsne_visualization(ax4, ml_results, data_dict)
+        for grid_spec, plot_func, name in plot_functions:
+            try:
+                self.logger.info(f"DEBUG: Creating {name} plot")
+                ax = fig.add_subplot(grid_spec)
+                if name == "t-SNE visualization":
+                    plot_func(ax, ml_results, data_dict)
+                else:
+                    plot_func(ax, ml_results)
+                self.logger.info(f"DEBUG: {name} plot completed")
+            except Exception as e:
+                self.logger.error(f"DEBUG: Error in {name}: {e}")
+                import traceback
+                self.logger.error(f"DEBUG: Traceback: {traceback.format_exc()}")
         
-        ax5 = fig.add_subplot(gs[1, 2])
-        self._plot_feature_importance(ax5, ml_results)
+        # Row 3-5: Remaining plots with comprehensive debugging
+        remaining_plots = [
+            (gs[2, :2], self._plot_density_hotspots, "density hotspots", True),
+            (gs[2, 2:], self._plot_height_stratified_patterns, "height stratified patterns", False),
+            (gs[3, :2], self._plot_physical_accuracy_assessment, "physical accuracy assessment", False),
+            (gs[3, 2:], self._plot_occlusion_analysis, "occlusion analysis", False),
+            (gs[4, :2], self._plot_model_similarity_matrix, "model similarity matrix", False),
+            (gs[4, 2:], self._plot_performance_rankings, "performance rankings", False)
+        ]
         
-        ax6 = fig.add_subplot(gs[1, 3])
-        self._plot_explained_variance(ax6, ml_results)
-        
-        # Row 3: Spatial Pattern Analysis
-        ax7 = fig.add_subplot(gs[2, :2])
-        self._plot_density_hotspots(ax7, ml_results, data_dict)
-        
-        ax8 = fig.add_subplot(gs[2, 2:])
-        self._plot_height_stratified_patterns(ax8, ml_results)
-        
-        # Row 4: Physical Accuracy and Occlusion Analysis
-        ax9 = fig.add_subplot(gs[3, :2])
-        self._plot_physical_accuracy_assessment(ax9, ml_results)
-        
-        ax10 = fig.add_subplot(gs[3, 2:])
-        self._plot_occlusion_analysis(ax10, ml_results)
-        
-        # Row 5: Model Comparison and Rankings
-        ax11 = fig.add_subplot(gs[4, :2])
-        self._plot_model_similarity_matrix(ax11, ml_results)
-        
-        ax12 = fig.add_subplot(gs[4, 2:])
-        self._plot_performance_rankings(ax12, ml_results)
+        for grid_spec, plot_func, name, needs_data_dict in remaining_plots:
+            try:
+                self.logger.info(f"DEBUG: Creating {name} plot")
+                ax = fig.add_subplot(grid_spec)
+                if needs_data_dict:
+                    plot_func(ax, ml_results, data_dict)
+                else:
+                    plot_func(ax, ml_results)
+                self.logger.info(f"DEBUG: {name} plot completed")
+            except Exception as e:
+                self.logger.error(f"DEBUG: Error in {name}: {e}")
+                import traceback
+                self.logger.error(f"DEBUG: Traceback: {traceback.format_exc()}")
         
         # Save figure if path provided
         if output_path:
@@ -345,7 +398,7 @@ class MLVisualizer:
                 if isinstance(n_comp, int):
                     components.append(n_comp)
                     cum_var = pca_data.get('cumulative_variance', [])
-                    if cum_var:
+                    if len(cum_var) > 0:  # Safe check for array length
                         cumulative_variance.append(cum_var[-1])  # Last value is total
             
             if components and cumulative_variance:
@@ -633,8 +686,13 @@ class MLVisualizer:
             # Add text annotations
             for i in range(len(models)):
                 for j in range(len(height_layers)):
-                    text = ax.text(j, i, f'{data_matrix[i, j]:.3f}',
-                                 ha="center", va="center", color="white" if data_matrix[i, j] > data_matrix.max()/2 else "black",
+                    # Safe scalar extraction to avoid array ambiguity
+                    cell_value = safe_scalar_extract(data_matrix[i, j])
+                    threshold = safe_scalar_extract(data_matrix.max() / 2)
+                    text_color = "white" if cell_value > threshold else "black"
+                    
+                    text = ax.text(j, i, f'{cell_value:.3f}',
+                                 ha="center", va="center", color=text_color,
                                  fontsize=10, fontweight='bold')
             
             ax.set_title('Mean Density by Height Layer and Model')
@@ -687,8 +745,11 @@ class MLVisualizer:
             for bars, values in zip([bars1, bars2, bars3], [outlier_percentages, zero_density_percentages, negative_densities]):
                 for bar, val in zip(bars, values):
                     height = bar.get_height()
-                    if val > 0:
-                        ax.annotate(f'{val:.1f}' if val < 100 else f'{int(val)}',
+                    # Safe scalar extraction to avoid array ambiguity
+                    val_scalar = safe_scalar_extract(val)
+                    
+                    if val_scalar > 0:
+                        ax.annotate(f'{val_scalar:.1f}' if val_scalar < 100 else f'{int(val_scalar)}',
                                   xy=(bar.get_x() + bar.get_width() / 2, height),
                                   xytext=(0, 3), textcoords="offset points",
                                   ha='center', va='bottom', fontsize=9)
@@ -701,9 +762,16 @@ class MLVisualizer:
             ax.legend()
             ax.grid(True, alpha=0.3)
             
-            # Set y-axis to log scale if values vary greatly
-            if max(max(outlier_percentages), max(zero_density_percentages)) > 10 * min(negative_densities) and min(negative_densities) > 0:
-                ax.set_yscale('log')
+            # Set y-axis to log scale if values vary greatly - with safe array handling
+            try:
+                max_outliers = safe_scalar_extract(np.max(outlier_percentages)) if len(outlier_percentages) > 0 else 0
+                max_zeros = safe_scalar_extract(np.max(zero_density_percentages)) if len(zero_density_percentages) > 0 else 0
+                min_negatives = safe_scalar_extract(np.min(negative_densities)) if len(negative_densities) > 0 else 0
+                
+                if max(max_outliers, max_zeros) > 10 * min_negatives and min_negatives > 0:
+                    ax.set_yscale('log')
+            except (ValueError, TypeError, AttributeError):
+                pass  # Skip log scale if data is problematic
         else:
             ax.text(0.5, 0.5, 'No accuracy metrics available', 
                    ha='center', va='center', transform=ax.transAxes)
@@ -763,8 +831,11 @@ class MLVisualizer:
             # Add value labels on bars
             for bar, val in zip(bars, shadow_percentages):
                 height = bar.get_height()
-                if val > 0:
-                    ax.annotate(f'{val:.1f}%',
+                # Safe scalar extraction to avoid array ambiguity
+                val_scalar = safe_scalar_extract(val)
+                
+                if val_scalar > 0:
+                    ax.annotate(f'{val_scalar:.1f}%',
                               xy=(bar.get_x() + bar.get_width() / 2, height),
                               xytext=(0, 3), textcoords="offset points",
                               ha='center', va='bottom', fontsize=9)
@@ -813,9 +884,12 @@ class MLVisualizer:
             for i in range(len(model_names)):
                 for j in range(len(model_names)):
                     if i != j:  # Don't annotate diagonal
-                        text = ax.text(j, i, f'{similarity_matrix[i, j]:.3f}',
-                                     ha="center", va="center", 
-                                     color="white" if similarity_matrix[i, j] < 0.5 else "black",
+                        # Safe scalar extraction to avoid array ambiguity
+                        cell_value = safe_scalar_extract(similarity_matrix[i, j])
+                        text_color = "white" if cell_value < 0.5 else "black"
+                        
+                        text = ax.text(j, i, f'{cell_value:.3f}',
+                                     ha="center", va="center", color=text_color,
                                      fontsize=10, fontweight='bold')
             
             ax.set_title('Model Similarity Matrix\n(Based on Spatial Pattern Features)')
@@ -898,7 +972,7 @@ class MLVisualizer:
             self.logger.error(f"Required columns missing for {model_name}")
             return None
         
-        fig = plt.figure(figsize=self.config['figure_settings']['figsize_square'])
+        fig = plt.figure(figsize=self.config['figsize']['square_plot'])
         ax = fig.add_subplot(111, projection='3d')
         
         # Get clustering results for this model
@@ -914,12 +988,26 @@ class MLVisualizer:
             if cluster_labels is not None:
                 # Sample data for performance (3D plots can be slow)
                 if len(df) > 5000:
-                    sample_idx = np.random.choice(len(df), 5000, replace=False)
-                    df_sample = df.iloc[sample_idx]
-                    cluster_labels_sample = cluster_labels[sample_idx]
+                    # Ensure cluster_labels matches df size before sampling
+                    if len(cluster_labels) == len(df):
+                        sample_idx = np.random.choice(len(df), 5000, replace=False)
+                        df_sample = df.iloc[sample_idx]
+                        cluster_labels_sample = cluster_labels[sample_idx]
+                    else:
+                        # Mismatch in sizes - use original data up to cluster_labels size
+                        min_size = min(len(df), len(cluster_labels))
+                        if min_size > 5000:
+                            sample_idx = np.random.choice(min_size, 5000, replace=False)
+                            df_sample = df.iloc[sample_idx]
+                            cluster_labels_sample = cluster_labels[sample_idx]
+                        else:
+                            df_sample = df.iloc[:min_size]
+                            cluster_labels_sample = cluster_labels[:min_size]
                 else:
-                    df_sample = df
-                    cluster_labels_sample = cluster_labels
+                    # Ensure sizes match for smaller datasets
+                    min_size = min(len(df), len(cluster_labels))
+                    df_sample = df.iloc[:min_size]
+                    cluster_labels_sample = cluster_labels[:min_size]
                 
                 # Plot each cluster with different color
                 colors = self.config['colors']['cluster_colors']

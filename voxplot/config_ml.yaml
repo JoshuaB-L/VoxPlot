@@ -5,7 +5,7 @@
 
 analysis:
   # Basic analysis parameters
-  crown_base_height: 5.0          # Height threshold for crown base (meters)
+  crown_base_height: 1.5          # Height threshold for crown base (meters)
   voxel_size: 0.25                # Voxel resolution (meters)
   min_density: 0.001              # Minimum density threshold for analysis
   output_dir: "ml_analysis_results"  # Output directory for all results
@@ -25,20 +25,44 @@ analysis:
   
   # ML analysis parameters
   ml_analysis:
-    # Random sampling for large datasets (for performance)
+    # Sampling configuration for performance optimization
+    enable_sampling: true          # Enable intelligent sampling for large datasets
     max_sample_size: 10000         # Maximum number of voxels to sample per model
-    enable_sampling: true          # Enable random sampling for large datasets
+    sampling_strategy: "stratified_spatial"  # Options: "random", "stratified_spatial", "density_aware", "height_stratified"
     random_seed: 42               # Random seed for reproducible results
+    
+    # Performance optimization settings
+    performance:
+      # Compute backend selection
+      compute_backend: "gpu"       # Options: "cpu", "gpu", "auto"
+      use_gpu_acceleration: true  # Enable CUDA acceleration where available
+      n_jobs: -1                   # Number of parallel jobs (-1 for all cores)
+      
+      # Memory optimization
+      data_type_optimization: true # Use float32 instead of float64 for memory efficiency
+      chunk_processing: true      # Enable chunked processing for very large datasets
+      chunk_size: 50000           # Voxels per chunk when chunk_processing enabled
 
 # ML Analysis Configuration
 ml_config:
   # Clustering analysis settings
   clustering:
-    # K-Means clustering
+    # K-Means clustering configuration
     kmeans:
+      # Algorithm selection
+      algorithm: "auto"                    # Options: "standard", "mini_batch", "gpu_accelerated", "auto"
       cluster_range: [3, 5, 8, 12, 15]  # Range of cluster numbers to test
+      
+      # Standard K-Means parameters
       n_init: 10                    # Number of random initializations
       max_iter: 300                 # Maximum iterations
+      
+      # Mini-Batch K-Means parameters (when algorithm="mini_batch")
+      batch_size: 1000              # Batch size for mini-batch K-means
+      max_no_improvement: 10        # Early stopping parameter
+      
+      # GPU acceleration parameters (when algorithm="gpu_accelerated")
+      gpu_memory_fraction: 0.8      # Fraction of GPU memory to use
       
     # DBSCAN clustering  
     dbscan:
